@@ -1,11 +1,8 @@
 const {Pool} = require('pg');
 
 const config = {
-    user: 'postgres',
-    host: 'localhost',
-    database: 'chat',
-    password: '',
-    port: 5432,
+    connectionString: process.env.DATABASE_URL,
+    ssl: true
 }
 
 async function testLogin(login) {
