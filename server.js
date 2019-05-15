@@ -150,6 +150,6 @@ io.on('connection', socket => {
     })
 })
 
-server.listen(3000, () => {
+server.listen(process.env.PORT, () => {
     console.log('Сервер запущен: https://localhost:3000');
 });
