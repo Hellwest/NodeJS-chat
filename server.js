@@ -1,3 +1,5 @@
+var server_port = process.env.YOUR_PORT || process.env.PORT || 80;
+var server_host = process.env.YOUR_HOST || '0.0.0.0';
 const express = require('express');
 const session = require('express-session');
 const bodyParser = require('body-parser');
@@ -150,6 +152,6 @@ io.on('connection', socket => {
     })
 })
 
-server.listen(process.env.PORT, () => {
-    console.log('Сервер запущен: https://localhost:3000');
+server.listen(server_port, server_host, () => {
+    console.log('Сервер запущен: Порт', server_port);
 });
