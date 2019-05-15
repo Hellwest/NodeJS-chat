@@ -2,7 +2,7 @@
 
 ## Local installation
 ```
-$ git clone https://github.com/Hellwest/NodeJS-chat
+$ git clone https://github.com/Hellwest/NodeJS-chat.git
 $ cd NodeJS-chat
 $ npm install
 ```
