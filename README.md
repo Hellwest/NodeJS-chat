@@ -1,5 +1,8 @@
 # NodeJS-chat
 
+## ONLINE APP
+Heroku: https://nodejs-chat-bravedev.herokuapp.com
+
 ## Local installation
 ```
 $ git clone https://github.com/Hellwest/NodeJS-chat.git
@@ -12,7 +15,7 @@ $ npm install
 $ node server.js
 ```
 
-**Возможно, придётся изменить строку password в db.js, чтобы подключиться к базе данных**
+**Возможно, придётся изменить строку password в db.js, чтобы подключиться к локальной базе данных**
 
 ## Local PostgreSQL db
 ```
