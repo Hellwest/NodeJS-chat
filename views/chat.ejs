@@ -63,7 +63,8 @@
                 window.location.replace('/logout');
             })
 
-            const socket = io.connect('http://localhost:3000');
+            const io = socketIO(server);
+            const socket = io();
 
             // При коннекте текущего пользователя
             socket.on('connect', () => {
