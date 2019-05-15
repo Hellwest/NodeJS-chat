@@ -1,10 +1,15 @@
 # NodeJS-chat
 
-## Local installation & launch
+## Local installation
 ```
 $ git clone https://github.com/Hellwest/NodeJS-chat
 $ cd NodeJS-chat
 $ npm install
+```
+
+## Launch
+```
+$ node server.js
 ```
 
 **Возможно, придётся изменить строку password в db.js, чтобы подключиться к базе данных**
