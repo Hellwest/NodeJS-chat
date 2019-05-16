@@ -31,5 +31,5 @@ create table chathistory(
     msgid serial primary key not null,
     time timestamp default current_timestamp,
     username varchar(50) not null,
-	message text not null);
+    message text not null);
 ```
