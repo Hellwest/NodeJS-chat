@@ -1,16 +1,16 @@
 .center-div {
-    position: fixed;
-    top: 30%;
-    left: 40%;
-    width: 400px;
-    height: 350px;
-    border: 3px black solid;
+	position: fixed;
+	top: 30%;
+	left: 40%;
+	width: 400px;
+	height: 350px;
+	border: 3px black solid;
 }
 
 .content {
-    text-align: center;
+	text-align: center;
 }
 
 .upper-margin {
-    margin-top: 20px;
+	margin-top: 20px;
 }
