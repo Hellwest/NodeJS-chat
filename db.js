@@ -1,83 +1,53 @@
-const { Pool } = require('pg');
-
-const config = {
-    connectionString: process.env.DATABASE_URL,
-    ssl: true
-};
+const Sequelize = require('sequelize');
+const sequelize = require('./db/DBConnect.js');
+const User = require('./db/models/User');
+const ChatHistory = require('./db/models/ChatHistory');
+const Op = Sequelize.Op;
 
 async function testLogin(login) {
-    var pool = new Pool(config);
-    var client = await pool.connect();
-
-    try {
-        var result = await client.query(
-            'select * from users where username = $1',
-            [login]
-        );
-    } catch (error) {
-        console.log(error);
-    } finally {
-        client.release();
-        return result.rows[0];
-    }
+	try {
+		var result = await User.findAll({
+			attributes: ['username', 'password'],
+			where: { username: { [Op.like]: login } }
+		});
+	} catch (error) {
+		console.log('Error:', error);
+	} finally {
+		return result[0];
+	}
 }
 
 async function addUser(login, password) {
-    var pool = new Pool(config);
-    var client = await pool.connect();
-
-    try {
-        await client.query(
-            'INSERT INTO users (username, password) VALUES ($1, $2)',
-            [login, password]
-        );
-    } catch (err) {
-        console.log('Error inserting new login:', err);
-    } finally {
-        client.release();
-    }
+	try {
+		User.create({ username: login, password });
+	} catch (e) {
+		console.log('Error inserting new login:', e);
+	}
 }
 
-async function storeMessage(username, msg) {
-    var pool = new Pool(config);
-    var client = await pool.connect();
-
-    try {
-        await client.query(
-            'INSERT INTO chathistory (username, message) VALUES ($1, $2)',
-            [username, msg]
-        );
-    } catch (e) {
-        console.log('Error occured while inserting:', e);
-    } finally {
-        client.release();
-    }
+async function storeMessage(username, message) {
+	try {
+		ChatHistory.create({ username, message });
+	} catch (e) {
+		console.log('Error inserting new message:', e);
+	}
 }
 
 async function getChatHistory() {
-    var pool = new Pool(config);
-    var client = await pool.connect();
-
-    try {
-        var result = await client.query('SELECT * FROM chathistory');
-        for (let i = 0; i < result.rowCount; i++) {
-            result.rows[i].time = JSON.stringify(result.rows[i].time);
-            let date = result.rows[i].time.substring(1, 11);
-            let time = result.rows[i].time.substring(12, 20);
-            let fancy = date + ' ' + time;
-            result.rows[i].time = fancy;
-        }
-    } catch (e) {
-        console.log('Error occured while retrieving data:', e);
-    } finally {
-        client.release();
-        return result.rows;
-    }
+	try {
+		var result = await ChatHistory.findAll({
+			attributes: ['time', 'username', 'message']
+		});
+	} catch (e) {
+		console.log('Error retrieving chat history:', e);
+	} finally {
+		return result;
+	}
 }
 
 module.exports = {
-    testLogin,
-    addUser,
-    storeMessage,
-    getChatHistory
+	testLogin,
+	addUser,
+	storeMessage,
+	getChatHistory
 };
