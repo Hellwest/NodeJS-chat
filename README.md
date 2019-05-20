@@ -1,6 +1,7 @@
 # NodeJS-chat
 
 ## Local installation
+
 ```
 $ git clone https://github.com/Hellwest/NodeJS-chat
 $ cd NodeJS-chat
@@ -8,6 +9,7 @@ $ npm install
 ```
 
 ## Launch
+
 ```
 $ node server.js
 ```
@@ -15,6 +17,7 @@ $ node server.js
 **Возможно, придётся изменить строку password в db.js, чтобы подключиться к базе данных**
 
 ## Local PostgreSQL db
+
 ```
 create database chat;
 \c chat;
@@ -26,6 +29,7 @@ create table users(
 
 create table chathistory(
     msgid serial primary key not null,
-    time timestamp default current_timestamp,
-    username varchar(50) not null);    
+    time timestamptz default current_timestamp,
+    username varchar(50) not null,
+    message text not null);
 ```
