@@ -18,7 +18,7 @@ async function testLogin(login) {
         console.log(error);
     } finally {
         client.release();
-        return await result.rows[0];
+        return result.rows[0];
     }
 }
 
