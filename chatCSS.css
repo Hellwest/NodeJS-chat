@@ -4,6 +4,10 @@
 	box-sizing: border-box;
 }
 
+html {
+	padding-bottom: 50px;
+}
+
 body {
 	font: 13px Helvetica, Arial;
 }
