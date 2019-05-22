@@ -51,53 +51,49 @@ app.post('/login', async (req, res) => {
 	const { login, password } = req.body;
 	let result;
 	try {
-		result = await db.testLogin(login);
+		result = await db.findUser(login, password);
 	} catch (e) {
 		console.log('Error:', e);
 	}
 	console.log('Login found:', result);
 	if (result) {
-		if (password === result.password) {
-			if (!req.cookies.token) {
-				jwt.sign(
-					{ login, password },
-					secret,
-					{ expiresIn: '1h' },
-					(err, token) => {
-						if (err) {
-							console.log('JWT signing error occured:', err);
-						}
-						res.cookie('token', token, { httpOnly: true });
-						currentUser = login;
-						console.log('Token signed');
+		if (!req.cookies.token) {
+			jwt.sign(
+				{ login, password },
+				secret,
+				{ expiresIn: '1h' },
+				(err, token) => {
+					if (err) {
+						console.log('JWT signing error occured:', err);
+					}
+					res.cookie('token', token, { httpOnly: true });
+					currentUser = login;
+					console.log('Token signed');
+					res.redirect('./chat');
+				}
+			);
+		} else {
+			console.log('Trying to verify');
+			jwt.verify(
+				req.cookies.token,
+				secret,
+				{ maxAge: '1h' },
+				(err, decoded) => {
+					if (err) {
+						console.log('JWT verifying error occured:', err);
+						res.clearCookie('token');
+						console.log('Try again');
+						res.redirect('/');
+					} else {
+						currentUser = decoded.login;
+						console.log('Token verified');
 						res.redirect('./chat');
 					}
-				);
-			} else {
-				console.log('Trying to verify');
-				jwt.verify(
-					req.cookies.token,
-					secret,
-					{ maxAge: '1h' },
-					(err, decoded) => {
-						if (err) {
-							console.log('JWT verifying error occured:', err);
-							res.clearCookie('token');
-							console.log('Try again');
-							res.redirect('/');
-						} else {
-							currentUser = decoded.login;
-							console.log('Token verified');
-							res.redirect('./chat');
-						}
-					}
-				);
-			}
-		} else {
-			res.send('Incorrect password');
+				}
+			);
 		}
 	} else {
-		res.send('User not found');
+		res.send('Incorrect login/pass');
 	}
 });
 
@@ -105,9 +101,11 @@ app.get('/register-page', (req, res) => {
 	res.sendFile(path.join(__dirname + '/index-reg.html'));
 });
 
-app.post('/register', (req, res) => {
+app.post('/register', async (req, res) => {
 	const { login, password } = req.body;
-	db.addUser(login, password);
+	if (!(await db.addUser(login, password))) {
+		res.send('Failed to register');
+	}
 	jwt.sign({ login, password }, secret, { expiresIn: '1h' }, (err, token) => {
 		if (err) {
 			console.log('JWT signing error occured:', err);
@@ -151,7 +149,7 @@ io.on('connection', socket => {
 	io.emit('onlineListUpdate', currentOnline);
 
 	socket.on('message', msg => {
-		console.log('Message sent:', msg.sender, ':', msg.message);
+		console.log('Message sent:', msg.sender + ':', msg.message);
 		db.storeMessage(socketUser, msg.message);
 		socket.broadcast.emit('message', {
 			sender: msg.sender,
