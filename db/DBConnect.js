@@ -1,8 +1,7 @@
 const Sequelize = require('sequelize');
 
-const sequelize = new Sequelize('chat', 'postgres', '', {
-    host: 'localhost',
-    dialect: 'postgres',
+const sequelize = new Sequelize('postgres://postgres:admin@postgres:5432/chat', {
+    logging: false,
     pool: {
         max: 5,
         min: 0,

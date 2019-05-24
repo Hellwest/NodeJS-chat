@@ -126,7 +126,8 @@ app.get('/chat', authTest, async (req, res) => {
 	}
 	res.render('chat', {
 		currentUsername: currentUser,
-		chatHistory: result
+		chatHistory: result,
+		PORT,
 	});
 });
 

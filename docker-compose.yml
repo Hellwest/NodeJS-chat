@@ -1,0 +1,26 @@
+version: "3"
+services:
+  app:
+    build: .
+    ports:
+      - "80:80"
+      - "5432:5432"
+      - "7331:7331"
+      - "5858:5858"
+      - "9229:9229"
+    volumes:
+      - .:/opt/app
+      - reserved:/opt/app/node_modules/
+    entrypoint:
+      - npm
+      - run
+      - start
+  postgres:
+    image: postgres
+    restart: on-failure
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: postgres
+      POSTGRES_DB: chat
+volumes:
+  reserved:
