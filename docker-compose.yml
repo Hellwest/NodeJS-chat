@@ -2,12 +2,10 @@ version: "3"
 services:
   app:
     build: .
+    container_name: chat
     ports:
       - "80:80"
       - "5432:5432"
-      - "7331:7331"
-      - "5858:5858"
-      - "9229:9229"
     volumes:
       - .:/opt/app
       - reserved:/opt/app/node_modules/
@@ -17,10 +15,14 @@ services:
       - start
   postgres:
     image: postgres
+    container_name: chat_db
     restart: on-failure
+    volumes:
+      - db:/opt/app/data
     environment:
       POSTGRES_PASSWORD: admin
       POSTGRES_USER: postgres
       POSTGRES_DB: chat
 volumes:
   reserved:
+  db:
