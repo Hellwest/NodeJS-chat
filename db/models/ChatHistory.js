@@ -20,19 +20,7 @@ const ChatHistory = sequelize.define(
 				let hours = ('0' + date.getHours()).slice(-2);
 				let minutes = ('0' + date.getMinutes()).slice(-2);
 				let seconds = ('0' + date.getSeconds()).slice(-2);
-				return (
-					day +
-					'/' +
-					month +
-					'/' +
-					year +
-					' ' +
-					hours +
-					':' +
-					minutes +
-					':' +
-					seconds
-				);
+				return day + '/' + month + '/' + year + ' ' + hours + ':' + minutes + ':' + seconds;
 			}
 		},
 		username: {
