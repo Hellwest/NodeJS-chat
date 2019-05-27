@@ -14,6 +14,7 @@ const ChatHistory = sequelize.define(
 			defaultValue: Sequelize.NOW,
 			get: function() {
 				let date = new Date(this.getDataValue('time'));
+				date.setHours(date.getHours() + 4);
 				let month = date.getMonth();
 				let day = date.getDate();
 				let year = date.getFullYear();

@@ -127,7 +127,7 @@ app.get('/chat', authTest, async (req, res) => {
 	res.render('chat', {
 		currentUsername: currentUser,
 		chatHistory: result,
-		PORT,
+		PORT
 	});
 });
 
@@ -152,7 +152,7 @@ io.on('connection', socket => {
 	io.emit('onlineListUpdate', currentOnline);
 
 	socket.on('message', msg => {
-		console.log('Message sent:', msg.sender, ':', msg.message);
+		console.log('Message sent:', msg.sender + ':', msg.message);
 		db.storeMessage(socketUser, msg.message);
 		socket.broadcast.emit('message', {
 			sender: msg.sender,
