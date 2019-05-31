@@ -45,14 +45,20 @@
                 let hours = ('0' + date.getHours()).slice(-2);
                 let minutes = ('0' + date.getMinutes()).slice(-2);
                 let seconds = ('0' + date.getSeconds()).slice(-2);
-                return hours  +":" + minutes + ":" + seconds;
+                return hours + ":" + minutes + ":" + seconds;
             }
+
+            // const messageToInsert = (message) => {
+            //     return $(this).text(message);
+            // }
 
             // При отправке сообщения
             $('#send').on('click', (e) => {
                 e.preventDefault();
-                $('#messages').append('<li><span class="message-time">'+getMsgTime()+'</span> <span class="current-user">'+name+'</span>: '+$('#m').val()+'</li>');
-                socket.emit('message', {sender: name, time: getMsgTime(), message: $('#m').val()});
+                const message = $('#m').val();
+                $('#messages').append('<li><span class="message-time">'+getMsgTime()+'</span> <span class="current-user">'+name+'</span>: <span class="msg"></span></li>');
+                $('span.msg:last').text(message);
+                socket.emit('message', {sender: name, time: getMsgTime(), message});
                 $('#m').val('');
             })
 
@@ -82,8 +88,9 @@
 
             // При отправке сообщения кем-либо
             socket.on('message', (msg) => {
-                console.log('Client-side on message recieved:',msg.sender,': ',msg.message)
-                $('#messages').append('<li><span class="message-time">'+msg.time+'</span> <span class="username">'+msg.sender+'</span>: '+msg.message+'</li>')
+                console.log('Client-side on message recieved:',msg.sender+': ',msg.message);
+                $('#messages').append('<li><span class="message-time">'+msg.time+'</span> <span class="username">'+msg.sender+'</span>: <span class="msg"></span></li>');
+                $('span.msg:last').text(msg.message);
             })
 
             // При запросе обновления онлайн-листа
