@@ -1,95 +1,123 @@
 <!DOCTYPE html>
 <html lang="ru">
-    <head>
-        <title>Чат на NodeJS</title>
-        <meta charset="utf-8">
-        <link href='../chatCSS.css' rel='stylesheet' type='text/css'>
-        <script src="https://code.jquery.com/jquery-3.4.0.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
-    </head>
-    <body>
-        <div class="user-list">
-            <button class="logout">Выйти</button>
-            <h3>Онлайн</h3>
-            <ul class="online-list">
-            </ul>
-        </div>
-        <ul id="messages">
-            <!-- Вывод истории сообщений -->
+	<head>
+		<title>Чат на NodeJS</title>
+		<meta charset="utf-8" />
+		<link href="../chatCSS.css" rel="stylesheet" type="text/css" />
+		<script src="https://code.jquery.com/jquery-3.4.0.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+	</head>
+	<body>
+		<div class="user-list">
+			<button class="logout">Выйти</button>
+			<h3>Онлайн</h3>
+			<ul class="online-list"></ul>
+		</div>
+		<ul id="messages">
+			<!-- Вывод истории сообщений -->
             <% for (let i=0; i<chatHistory.length; i++) { %>
                 <li><span class="message-time"><%=chatHistory[i].time%></span> <span class="username"><%=chatHistory[i].username%></span>: <%=chatHistory[i].message%></li>
             <% } %>
-        </ul>
-        <form action="">
-            <input type="text" name="msgField" id="m" autocomplete="off" /><button id='send'>Send</button>
-        </form>
-        <script>
-            const name = "<%=currentUsername %>";
+		</ul>
+		<form action="">
+            <input type="text" name="msgField" id="m" autocomplete="off" /><button id="send">Send</button>
+		</form>
+		<script>
+			const name = '<%=currentUsername %>';
+			const PORT = '<%=PORT%>';
 
-            // Функция для обновления онлайн-листа
-            const renderOnlineList = (currentOnline) => {
-                $('.online-list').empty();
-                for (let i = 0; i<currentOnline.length; i++) {
-                    if (currentOnline[i] == name) {
-                        $('.online-list').append("<li class='current-user'>"+name+"</li>");
-                    } else {
-                        $('.online-list').append("<li>"+currentOnline[i]+"</li>");
-                    }
-                }
-            } 
+			// Функция для обновления онлайн-листа
+			const renderOnlineList = currentOnline => {
+				$('.online-list').empty();
+				for (let i = 0; i < currentOnline.length; i++) {
+					if (currentOnline[i] == name) {
+						$('.online-list').append(
+							"<li class='current-user'>" + name + '</li>'
+						);
+					} else {
+						$('.online-list').append(
+							'<li>' + currentOnline[i] + '</li>'
+						);
+					}
+				}
+			};
 
-            // Функция для определения времени отправки сообщения
-            const getMsgTime = () => {
-                let date = new Date();
-                let hours = ('0' + date.getHours()).slice(-2);
-                let minutes = ('0' + date.getMinutes()).slice(-2);
-                let seconds = ('0' + date.getSeconds()).slice(-2);
-                return hours + ':' + minutes + ':' + seconds;
-            }
+			// Функция для определения времени отправки сообщения
+			const getMsgTime = () => {
+				let date = new Date();
+				let hours = ('0' + date.getHours()).slice(-2);
+				let minutes = ('0' + date.getMinutes()).slice(-2);
+				let seconds = ('0' + date.getSeconds()).slice(-2);
+				return hours + ':' + minutes + ':' + seconds;
+			};
 
-            // При отправке сообщения
-            $('#send').on('click', (e) => {
-                e.preventDefault();
-                $('#messages').append('<li><span class="message-time">'+getMsgTime()+'</span> <span class="current-user">'+name+'</span>: '+$('#m').val()+'</li>');
-                socket.emit('message', {sender: name, time: getMsgTime(), message: $('#m').val()});
-                $('#m').val('');
-            })
+			// При отправке сообщения
+			$('#send').on('click', e => {
+				e.preventDefault();
+				const message = $('#m').val();
+				$('#messages').append(
+					'<li><span class="message-time">' +
+						getMsgTime() +
+						'</span> <span class="current-user">' +
+						name +
+						'</span>: <span class="msg"></span></li>'
+				);
+				$('span.msg:last').text(message);
+				socket.emit('message', {
+					sender: name,
+					time: getMsgTime(),
+					message
+				});
+				$('#m').val('');
+			});
 
-            // При выходе из аккаунта
-            $('.logout').on('click', (e) => {
-                e.preventDefault();
-                sessionStorage.clear();
-                socket.disconnect();
-                window.location.replace('/logout');
-            })
+			// При выходе из аккаунта
+			$('.logout').on('click', e => {
+				e.preventDefault();
+				socket.disconnect();
+				window.location.replace('/logout');
+			});
 
-            const socket = io.connect('https://nodejs-chat-bravedev.herokuapp.com');
+			const socket = io.connect(`https://nodejs-chat-bravedev.herokuapp.com`);
 
-            // При коннекте текущего пользователя
-            socket.on('connect', () => {
-                $('.online-list').append('<li class="current-user">'+name+'</li>');
-            })
+			// При коннекте текущего пользователя
+			socket.on('connect', () => {
+				$('.online-list').append(
+					'<li class="current-user">' + name + '</li>'
+				);
+			});
 
-            // При коннекте другого пользователя
-            socket.on('user-connected', (connectedName) => {
-                console.log('New client connected:',connectedName);
-            })
+			// При коннекте другого пользователя
+			socket.on('user-connected', connectedName => {
+				console.log('New client connected:', connectedName);
+			});
 
-            // При дисконнекте другого пользователя
-            socket.on('user-disconnected', (disconnectedName) => {
-                console.log('Client disconnected:',disconnectedName);
-            })
+			// При дисконнекте другого пользователя
+			socket.on('user-disconnected', disconnectedName => {
+				console.log('Client disconnected:', disconnectedName);
+			});
 
-            // При отправке сообщения кем-либо
-            socket.on('message', (msg) => {
-                console.log('Client-side on message recieved:',msg.sender,': ',msg.message)
-                $('#messages').append('<li><span class="message-time">'+msg.time+'</span> <span class="username">'+msg.sender+'</span>: '+msg.message+'</li>')
-            })
+			// При отправке сообщения кем-либо
+			socket.on('message', msg => {
+				console.log(
+					'Client-side on message recieved:',
+					msg.sender + ': ',
+					msg.message
+				);
+				$('#messages').append(
+					'<li><span class="message-time">' +
+						msg.time +
+						'</span> <span class="username">' +
+						msg.sender +
+						'</span>: <span class="msg"></span></li>'
+				);
+				$('span.msg:last').text(msg.message);
+			});
 
-            // При запросе обновления онлайн-листа
-            socket.on('onlineListUpdate', currentOnline => {
-                renderOnlineList(currentOnline);
-            })
-        </script>
-    </body>
+			// При запросе обновления онлайн-листа
+			socket.on('onlineListUpdate', currentOnline => {
+				renderOnlineList(currentOnline);
+			});
+		</script>
+	</body>
 </html>

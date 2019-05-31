@@ -55,7 +55,7 @@ app.post('/login', async (req, res) => {
     } catch (e) {
         console.log('Error:', e);
     }
-    console.log('Login found:', result);
+    
     if (result) {
         if (password == result.password) {
             if (!req.cookies.token) {
