@@ -37,4 +37,6 @@ const ChatHistory = sequelize.define(
 	}
 );
 
+ChatHistory.sync();
+
 module.exports = ChatHistory;
