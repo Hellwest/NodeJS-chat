@@ -34,7 +34,6 @@ const ChatHistory = sequelize.define(
 	},
 	{
 		freezeTableName: true,
-		timestamps: false
 	}
 );
 
