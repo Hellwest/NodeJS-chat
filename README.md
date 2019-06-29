@@ -14,8 +14,6 @@ $ npm install
 $ node server.js
 ```
 
-**Возможно, придётся изменить строку password в db.js, чтобы подключиться к базе данных**
-
 ## Local PostgreSQL db
 
 ```
