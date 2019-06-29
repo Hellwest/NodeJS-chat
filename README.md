@@ -15,8 +15,6 @@ $ npm install
 $ node server.js
 ```
 
-**Возможно, придётся изменить строку password в db.js, чтобы подключиться к локальной базе данных**
-
 ## Local PostgreSQL db
 ```
 create database chat;
@@ -25,7 +23,7 @@ create database chat;
 create table users(
     userid serial primary key not null,
     username varchar(50) not null,
-    password varchar(30) not null);
+    password varchar(60) not null);
 
 create table chathistory(
     msgid serial primary key not null,
