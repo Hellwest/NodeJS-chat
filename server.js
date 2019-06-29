@@ -1,5 +1,6 @@
 const express = require('express');
 const session = require('express-session');
+const exphbs = require('express-handlebars');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
@@ -9,10 +10,10 @@ const db = require('./db');
 const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.set('view engine', 'ejs');
 app.use(
 	session({
 		secret: 'exp-sess',
@@ -21,6 +22,8 @@ app.use(
 		cookie: { maxAge: 3600000 }
 	})
 );
+app.engine('handlebars', exphbs());
+app.set('view engine', 'handlebars');
 
 const secret = require('./jwtsecret').secret;
 let currentUser;
@@ -49,39 +52,29 @@ function authTest(req, res, next) {
 
 function checkTokenAndRedirect(req, res, login, password) {
 	if (!req.cookies.token) {
-		jwt.sign(
-			{ login, password },
-			secret,
-			{ expiresIn: '1h' },
-			(err, token) => {
-				if (err) {
-					console.log('JWT signing error occured:', err);
-				}
-				res.cookie('token', token, { httpOnly: true });
-				currentUser = login;
-				console.log('Token signed');
-				res.redirect('./chat');
+		jwt.sign({ login, password }, secret, { expiresIn: '6h' }, (err, token) => {
+			if (err) {
+				console.log('JWT signing error occured:', err);
 			}
-		);
+			res.cookie('token', token, { httpOnly: true });
+			currentUser = login;
+			console.log('Token signed');
+			res.redirect('./chat');
+		});
 	} else {
 		console.log('Trying to verify');
-		jwt.verify(
-			req.cookies.token,
-			secret,
-			{ maxAge: '1h' },
-			(err, decoded) => {
-				if (err) {
-					console.log('JWT verifying error occured:', err);
-					res.clearCookie('token');
-					console.log('Try again');
-					res.redirect('/');
-				} else {
-					currentUser = decoded.login;
-					console.log('Token verified');
-					res.redirect('./chat');
-				}
+		jwt.verify(req.cookies.token, secret, { maxAge: '1h' }, (err, decoded) => {
+			if (err) {
+				console.log('JWT verifying error occured:', err);
+				res.clearCookie('token');
+				console.log('Try again');
+				res.redirect('/');
+			} else {
+				currentUser = decoded.login;
+				console.log('Token verified');
+				res.redirect('./chat');
 			}
-		);
+		});
 	}
 }
 
@@ -125,7 +118,7 @@ app.post('/register', async (req, res) => {
 		console.log('Registration error:', error);
 	}
 	db.addUser(login, password);
-	jwt.sign({ login, password }, secret, { expiresIn: '1h' }, (err, token) => {
+	jwt.sign({ login, password }, secret, { expiresIn: '6h' }, (err, token) => {
 		if (err) {
 			console.log('JWT signing error occured:', err);
 		}
@@ -142,6 +135,7 @@ app.get('/chat', authTest, async (req, res) => {
 		console.log('Error:', e);
 	}
 	res.render('chat', {
+		layout: false,
 		currentUsername: currentUser,
 		chatHistory: result,
 		PORT
