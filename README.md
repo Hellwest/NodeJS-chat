@@ -12,16 +12,16 @@ $ cd NodeJS-chat
 $ npm install
 ```
 
-or using Docker:
-
-```
-$ docker-compose up
-```
-
 ## Launch
 
 ```
 $ node server.js
+```
+
+or using Docker:
+
+```
+$ docker-compose up
 ```
 
 ## Local PostgreSQL db
