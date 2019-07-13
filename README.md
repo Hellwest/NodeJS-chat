@@ -1,21 +1,31 @@
 # NodeJS-chat
 
 ## ONLINE APP
+
 Heroku: https://nodejs-chat-bravedev.herokuapp.com
 
 ## Local installation
+
 ```
 $ git clone https://github.com/Hellwest/NodeJS-chat.git
 $ cd NodeJS-chat
 $ npm install
 ```
 
+or using Docker:
+
+```
+$ docker-compose up
+```
+
 ## Launch
+
 ```
 $ node server.js
 ```
 
 ## Local PostgreSQL db
+
 ```
 create database chat;
 \c chat;
