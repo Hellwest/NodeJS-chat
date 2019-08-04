@@ -76,7 +76,7 @@
 			window.location.replace('/logout');
 		});
 
-		const socket = io.connect(`https://nodejs-chat-bravedev.herokuapp.com`);
+		const socket = io.connect(`https://nodejs-chat-bravedev.herokuapp.com/`);
 
 		// При коннекте текущего пользователя
 		socket.on('connect', () => {

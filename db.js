@@ -1,5 +1,4 @@
 const Sequelize = require('sequelize');
-const sequelize = require('./db/DBConnect.js');
 const User = require('./db/models/User');
 const ChatHistory = require('./db/models/ChatHistory');
 const Op = Sequelize.Op;
