@@ -108,7 +108,6 @@ app.get("/register-page", (req, res) => {
 
 app.post("/register", async (req, res) => {
   const login = req.body.login;
-  console.log("REQ BODY:", req.body);
 
   const password = await bcrypt.hash(req.body.password, saltRounds);
 
