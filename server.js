@@ -86,7 +86,6 @@ app.use("/", express.static(__dirname + "/"));
 
 app.post("/login", async (req, res) => {
   const { login, password } = req.body;
-  let result;
 
   const result = await db.testLogin(login);
 
