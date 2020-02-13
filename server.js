@@ -64,22 +64,22 @@ function checkTokenAndRedirect(req, res, login, password) {
 
     console.log("Token signed");
     res.redirect("./chat");
+  } else {
+    console.log("Trying to verify");
+    const decoded = jwt.verify(req.cookies.token, secret, { maxAge: "1h" });
+
+    if (!decoded) {
+      res.clearCookie("token");
+
+      console.log("Try again");
+      res.redirect("/");
+    }
+
+    currentUser = decoded.login;
+
+    console.log("Token verified");
+    res.redirect("./chat");
   }
-
-  console.log("Trying to verify");
-  const decoded = jwt.verify(req.cookies.token, secret, { maxAge: "1h" });
-
-  if (!decoded) {
-    res.clearCookie("token");
-
-    console.log("Try again");
-    res.redirect("/");
-  }
-
-  currentUser = decoded.login;
-
-  console.log("Token verified");
-  res.redirect("./chat");
 }
 
 app.use("/", express.static(__dirname + "/"));
@@ -91,15 +91,15 @@ app.post("/login", async (req, res) => {
 
   if (!result) {
     res.send("User not found");
+  } else {
+    const isPassCorrect = await bcrypt.compare(password, result.password);
+
+    if (!isPassCorrect) {
+      res.send("Incorrect password");
+    } else {
+      checkTokenAndRedirect(req, res, login, password);
+    }
   }
-
-  const isPassCorrect = await bcrypt.compare(password, result.password);
-
-  if (!isPassCorrect) {
-    res.send("Incorrect password");
-  }
-
-  checkTokenAndRedirect(req, res, login, password);
 });
 
 app.get("/register-page", (req, res) => {
@@ -108,6 +108,7 @@ app.get("/register-page", (req, res) => {
 
 app.post("/register", async (req, res) => {
   const login = req.body.login;
+  console.log("REQ BODY:", req.body);
 
   const password = await bcrypt.hash(req.body.password, saltRounds);
 
