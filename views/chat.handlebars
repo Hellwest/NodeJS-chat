@@ -81,7 +81,7 @@
 			window.location.replace('/logout');
 		});
 
-		const socket = io.connect(`http://localhost:${PORT}`);
+		const socket = io.connect(`https://nodejs-chat-bravedev.herokuapp.com/`);
 
 		// При коннекте текущего пользователя
 		socket.on('connect', () => {

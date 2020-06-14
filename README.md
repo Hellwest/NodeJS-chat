@@ -2,26 +2,26 @@
 
 ## ONLINE APP
 
-Heroku: https://nodejs-chat-bravedev.herokuapp.com
+Heroku: <https://nodejs-chat-bravedev.herokuapp.com>
 
 ## Local installation
 
 ```
-$ git clone https://github.com/Hellwest/NodeJS-chat.git
-$ cd NodeJS-chat
-$ npm install
+git clone https://github.com/Hellwest/NodeJS-chat.git
+cd NodeJS-chat
+npm install
 ```
 
 ## Launch
 
 ```
-$ node server.js
+node server.js
 ```
 
 or using Docker:
 
 ```
-$ docker-compose up
+docker-compose up
 ```
 
 ## Local PostgreSQL db

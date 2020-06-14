@@ -25,7 +25,7 @@ app.use(
 app.engine("handlebars", exphbs());
 app.set("view engine", "handlebars");
 
-const secret = require("./jwtsecret").secret;
+const secret = require("./jwtsecret.js").secret;
 let currentUser;
 let currentOnline = [];
 const saltRounds = 10;
@@ -34,51 +34,43 @@ function authTest(req, res, next) {
   if (!req.cookies.token) {
     console.log("No token supplied. Redirecting");
     res.redirect("/");
+  } else {
+    jwt.verify(req.cookies.token, secret, (err, decoded) => {
+      if (err) {
+        console.log("Token authentication failed:", err);
+        res.clearCookie("token");
+        console.log("Try again");
+        res.redirect("/");
+      } else {
+        currentUser = decoded.login;
+        next();
+      }
+    });
   }
-
-  const decoded = jwt.verify(req.cookies.token, secret);
-
-  if (!decoded) {
-    console.log("Token authentication failed");
-    res.clearCookie("token");
-
-    console.log("Try again");
-    res.redirect("/");
-  }
-
-  console.log("Token verification successful (middleware)");
-  currentUser = decoded.login;
-  next();
 }
 
 function checkTokenAndRedirect(req, res, login, password) {
   if (!req.cookies.token) {
-    const token = jwt.sign({ login, password }, secret, { expiresIn: "6h" });
-
-    if (!token) {
-      console.log("JWT signing error occured");
-    }
-
-    res.cookie("token", token, { httpOnly: true });
-    currentUser = login;
-
-    console.log("Token signed");
-    res.redirect("./chat");
+    jwt.sign({ login, password }, secret, { expiresIn: "6h" }, (err, token) => {
+      if (err) {
+        console.log("JWT signing error occured:", err);
+      }
+      res.cookie("token", token, { httpOnly: true });
+      currentUser = login;
+      res.redirect("./chat");
+    });
   } else {
-    console.log("Trying to verify");
-    const decoded = jwt.verify(req.cookies.token, secret, { maxAge: "1h" });
-
-    if (!decoded) {
-      res.clearCookie("token");
-
-      console.log("Try again");
-      res.redirect("/");
-    }
-
-    currentUser = decoded.login;
-
-    console.log("Token verified");
-    res.redirect("./chat");
+    jwt.verify(req.cookies.token, secret, { maxAge: "1h" }, (err, decoded) => {
+      if (err) {
+        console.log("JWT verifying error occured:", err);
+        res.clearCookie("token");
+        console.log("Try again");
+        res.redirect("/");
+      } else {
+        currentUser = decoded.login;
+        res.redirect("./chat");
+      }
+    });
   }
 }
 
@@ -86,19 +78,26 @@ app.use("/", express.static(__dirname + "/"));
 
 app.post("/login", async (req, res) => {
   const { login, password } = req.body;
-
-  const result = await db.testLogin(login);
-
-  if (!result) {
-    res.send("User not found");
-  } else {
-    const isPassCorrect = await bcrypt.compare(password, result.password);
-
-    if (!isPassCorrect) {
-      res.send("Incorrect password");
-    } else {
-      checkTokenAndRedirect(req, res, login, password);
+  let result;
+  try {
+    result = await db.testLogin(login);
+  } catch (e) {
+    console.log("Error:", e);
+  }
+  if (result) {
+    let isPassCorrect;
+    try {
+      isPassCorrect = await bcrypt.compare(password, result.password);
+    } catch (err) {
+      console.log("Comparing error:", err);
     }
+    if (isPassCorrect) {
+      checkTokenAndRedirect(req, res, login, password);
+    } else {
+      res.send("Incorrect password");
+    }
+  } else {
+    res.send("User not found");
   }
 });
 
@@ -108,36 +107,33 @@ app.get("/register-page", (req, res) => {
 
 app.post("/register", async (req, res) => {
   const login = req.body.login;
-
-  const password = await bcrypt.hash(req.body.password, saltRounds);
-
-  if (!password) {
+  let password;
+  try {
+    password = await bcrypt.hash(req.body.password, saltRounds);
+  } catch (error) {
     console.log("Registration error:", error);
   }
-
   db.addUser(login, password);
-  const token = jwt.sign({ login, password }, secret, { expiresIn: "6h" });
-
-  if (!token) {
-    console.log("JWT signing error occured");
-  }
-
-  res.cookie("token", token, { httpOnly: true });
-  res.redirect("/");
+  jwt.sign({ login, password }, secret, { expiresIn: "6h" }, (err, token) => {
+    if (err) {
+      console.log("JWT signing error occured:", err);
+    }
+    res.cookie("token", token, { httpOnly: true });
+    res.redirect("/");
+  });
 });
 
 app.get("/chat", authTest, async (req, res) => {
-  const result = await db.getChatHistory();
-
-  if (!result) {
-    console.log("Error retreiving chat history");
+  let result;
+  try {
+    result = await db.getChatHistory();
+  } catch (e) {
+    console.log("Error:", e);
   }
-
   res.render("chat", {
     layout: false,
     currentUsername: currentUser,
-    chatHistory: result,
-    PORT
+    chatHistory: result
   });
 });
 
@@ -146,9 +142,10 @@ app.get("/logout", (req, res) => {
   res.redirect("/");
 });
 
-const PORT = process.env.PORT || 80;
-server.listen(PORT, () => {
-  console.log(`Server running at port ${PORT}`);
+const server_port = process.env.YOUR_PORT || process.env.PORT || 80;
+const server_host = process.env.YOUR_HOST || "0.0.0.0";
+server.listen(server_port, server_host, () => {
+  console.log(`Server running at port ${server_port}`);
 });
 
 // Socket.io
@@ -156,17 +153,14 @@ server.listen(PORT, () => {
 io.on("connection", socket => {
   let socketUser = currentUser;
   currentOnline.push(socketUser);
-
   console.log("User connected:", socketUser);
   console.log("Currently online:", currentOnline);
-
   io.emit("user-connected", socketUser);
   io.emit("onlineListUpdate", currentOnline);
 
   socket.on("message", msg => {
-    console.log("Message sent:", msg.sender + ":", msg.message);
+    console.log("Message sent:", msg.sender, ":", msg.message);
     db.storeMessage(socketUser, msg.message);
-
     socket.broadcast.emit("message", {
       sender: msg.sender,
       time: msg.time,
@@ -176,17 +170,14 @@ io.on("connection", socket => {
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socketUser);
-
     for (var i = 0; i < currentOnline.length; i++) {
       if (currentOnline[i] === socketUser) {
         currentOnline.splice(i, 1);
         break;
       }
     }
-
     io.emit("user-disconnected", socketUser);
     io.emit("onlineListUpdate", currentOnline);
-
     console.log("Currently online:", currentOnline);
   });
 });
