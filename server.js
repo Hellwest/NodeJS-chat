@@ -30,7 +30,7 @@ let currentUser;
 let currentOnline = [];
 const saltRounds = 10;
 
-function authTest(req, res, next) {
+const authTest = (req, res, next) => {
   if (!req.cookies.token) {
     console.log("No token supplied. Redirecting");
     res.redirect("/");
@@ -51,7 +51,7 @@ function authTest(req, res, next) {
   next();
 }
 
-function checkTokenAndRedirect(req, res, login, password) {
+const checkTokenAndRedirect = (req, res, login, password) => {
   if (!req.cookies.token) {
     const token = jwt.sign({ login, password }, secret, { expiresIn: "6h" });
 

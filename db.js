@@ -1,9 +1,7 @@
-const Sequelize = require('sequelize');
-const sequelize = require('./db/DBConnect.js');
 const User = require('./db/models/User');
 const Message = require('./db/models/Message');
 
-async function testLogin(login) {
+const testLogin = async (login) => {
 	try {
 		return await User.findOne({ username: login });
 	} catch (error) {
@@ -11,7 +9,7 @@ async function testLogin(login) {
 	}
 }
 
-async function addUser(login, password) {
+const addUser = async (login, password) => {
 	try {
 		User.create({ username: login, password });
 	} catch (error) {
@@ -19,7 +17,7 @@ async function addUser(login, password) {
 	}
 }
 
-async function storeMessage(username, text, time) {
+const storeMessage = async (username, text, time) => {
 	try {
 		Message.create({ username, text, time });
 	} catch (error) {
@@ -27,7 +25,7 @@ async function storeMessage(username, text, time) {
 	}
 }
 
-async function getChatHistory() {
+const getChatHistory = async () => {
 	try {
 		return await Message.find();
 	} catch (error) {
