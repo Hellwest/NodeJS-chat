@@ -1,47 +1,37 @@
 const Sequelize = require('sequelize');
 const sequelize = require('./db/DBConnect.js');
 const User = require('./db/models/User');
-const ChatHistory = require('./db/models/ChatHistory');
-const Op = Sequelize.Op;
+const Message = require('./db/models/Message');
 
 async function testLogin(login) {
 	try {
-		var result = await User.findAll({
-			attributes: ['username', 'password'],
-			where: { username: { [Op.like]: login } }
-		});
+		return await User.findOne({ username: login });
 	} catch (error) {
-		console.log('Error:', error);
-	} finally {
-		return result[0];
+		console.log('Error searching for a user:', error);
 	}
 }
 
 async function addUser(login, password) {
 	try {
 		User.create({ username: login, password });
-	} catch (e) {
-		console.log('Error inserting new login:', e);
+	} catch (error) {
+		console.log('Error inserting new login:', error);
 	}
 }
 
-async function storeMessage(username, message) {
+async function storeMessage(username, text, time) {
 	try {
-		ChatHistory.create({ username, message });
-	} catch (e) {
-		console.log('Error inserting new message:', e);
+		Message.create({ username, text, time });
+	} catch (error) {
+		console.log('Error inserting new message:', error);
 	}
 }
 
 async function getChatHistory() {
 	try {
-		var result = await ChatHistory.findAll({
-			attributes: ['time', 'username', 'message']
-		});
-	} catch (e) {
-		console.log('Error retrieving chat history:', e);
-	} finally {
-		return result;
+		return await Message.find();
+	} catch (error) {
+		console.log('Error retrieving chat history:', error);
 	}
 }
 

@@ -146,7 +146,7 @@ app.get("/logout", (req, res) => {
   res.redirect("/");
 });
 
-const PORT = process.env.PORT || 80;
+const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running at port ${PORT}`);
 });
@@ -164,13 +164,13 @@ io.on("connection", socket => {
   io.emit("onlineListUpdate", currentOnline);
 
   socket.on("message", msg => {
-    console.log("Message sent:", msg.sender + ":", msg.message);
-    db.storeMessage(socketUser, msg.message);
+    console.log("Message sent:", msg.sender + ":", msg.text);
+    db.storeMessage(socketUser, msg.text, msg.time);
 
     socket.broadcast.emit("message", {
       sender: msg.sender,
       time: msg.time,
-      message: msg.message
+      text: msg.text
     });
   });
 

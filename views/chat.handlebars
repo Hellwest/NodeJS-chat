@@ -19,7 +19,7 @@
 		<!-- Вывод истории сообщений -->
 		{{#each chatHistory}}
 		<li><span class="message-time">{{this.time}}</span> <span class="username">{{this.username}}</span>:
-			{{this.message}}</li>
+			{{this.text}}</li>
 		{{/each}}
 	</ul>
 	<form action="">
@@ -51,13 +51,14 @@
 			let hours = ('0' + date.getHours()).slice(-2);
 			let minutes = ('0' + date.getMinutes()).slice(-2);
 			let seconds = ('0' + date.getSeconds()).slice(-2);
+
 			return hours + ':' + minutes + ':' + seconds;
 		};
 
 		// При отправке сообщения
 		$('#send').on('click', e => {
 			e.preventDefault();
-			const message = $('#m').val();
+			const text = $('#m').val();
 			$('#messages').append(
 				'<li><span class="message-time">' +
 				getMsgTime() +
@@ -65,11 +66,11 @@
 				name +
 				'</span>: <span class="msg"></span></li>'
 			);
-			$('span.msg:last').text(message);
+			$('span.msg:last').text(text);
 			socket.emit('message', {
 				sender: name,
-				time: getMsgTime(),
-				message
+				time: new Date(),
+				text,
 			});
 			$('#m').val('');
 		});
@@ -105,7 +106,7 @@
 			console.log(
 				'Client-side on message recieved:',
 				msg.sender + ': ',
-				msg.message
+				msg.text
 			);
 			$('#messages').append(
 				'<li><span class="message-time">' +
@@ -114,7 +115,7 @@
 				msg.sender +
 				'</span>: <span class="msg"></span></li>'
 			);
-			$('span.msg:last').text(msg.message);
+			$('span.msg:last').text(msg.text);
 		});
 
 		// При запросе обновления онлайн-листа

@@ -1,4 +1,4 @@
-FROM node:10
+FROM node:latest
 
 # install dependencies
 WORKDIR /opt/app
@@ -9,9 +9,7 @@ COPY package.json yarn.lock ./
 COPY . /opt/app
 RUN yarn
 
-# set application PORT and expose docker PORT, 80 is what Elastic Beanstalk expects
-ENV PORT 80
-EXPOSE 80
+EXPOSE 5000
 
 CMD yarn && yarn start
 
