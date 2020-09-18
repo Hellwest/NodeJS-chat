@@ -1,7 +1,7 @@
 const User = require('./db/models/User');
 const Message = require('./db/models/Message');
 
-const testLogin = async (login) => {
+const getUser = async (login) => {
 	try {
 		return await User.findOne({ username: login });
 	} catch (error) {
@@ -34,7 +34,7 @@ const getChatHistory = async () => {
 }
 
 module.exports = {
-	testLogin,
+	getUser,
 	addUser,
 	storeMessage,
 	getChatHistory

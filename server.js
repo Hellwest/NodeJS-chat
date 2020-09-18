@@ -6,10 +6,12 @@ const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const path = require("path");
-const db = require("./db");
 const app = express();
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
+
+const db = require("./db");
+const { secret } = require("./jwtsecret");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -24,8 +26,8 @@ app.use(
 );
 app.engine("handlebars", exphbs());
 app.set("view engine", "handlebars");
+app.use(express.static(path.join(__dirname + "/css/")))
 
-const secret = require("./jwtsecret").secret;
 let currentUser;
 const currentOnline = [];
 const saltRounds = 10;
@@ -82,17 +84,21 @@ const checkTokenAndRedirect = (req, res, login, password) => {
   }
 }
 
-app.use("/", express.static(__dirname + "/"));
+app.get("/", (_, res) => {
+  res.render("index", {
+    layout: false,
+  })
+});
 
 app.post("/login", async (req, res) => {
   const { login, password } = req.body;
 
-  const result = await db.testLogin(login);
+  const user = await db.getUser(login);
 
-  if (!result) {
+  if (!user) {
     res.send("Invalid credentials");
   } else {
-    const isPassCorrect = await bcrypt.compare(password, result.password);
+    const isPassCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPassCorrect) {
       res.send("Invalid credentials");
@@ -103,11 +109,13 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/register-page", (_, res) => {
-  res.sendFile(path.join(__dirname + "/index-reg.html"));
+  res.render("registration", {
+    layout: false,
+  });
 });
 
 app.post("/register", async (req, res) => {
-  const login = req.body.login;
+  const { login } = req.body;
 
   const password = await bcrypt.hash(req.body.password, saltRounds);
 
@@ -127,16 +135,16 @@ app.post("/register", async (req, res) => {
 });
 
 app.get("/chat", authTest, async (_, res) => {
-  const result = await db.getChatHistory();
+  const chatHistory = await db.getChatHistory();
 
-  if (!result) {
+  if (!chatHistory) {
     console.log("Error retreiving chat history");
   }
 
   res.render("chat", {
     layout: false,
     currentUsername: currentUser,
-    chatHistory: result,
+    chatHistory,
     PORT
   });
 });
@@ -177,7 +185,7 @@ io.on("connection", socket => {
   socket.on("disconnect", () => {
     console.log("User disconnected:", socketUser);
 
-    for (var i = 0; i < currentOnline.length; i++) {
+    for (let i = 0; i < currentOnline.length; i++) {
       if (currentOnline[i] === socketUser) {
         currentOnline.splice(i, 1);
         break;
