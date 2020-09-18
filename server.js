@@ -27,7 +27,7 @@ app.set("view engine", "handlebars");
 
 const secret = require("./jwtsecret").secret;
 let currentUser;
-let currentOnline = [];
+const currentOnline = [];
 const saltRounds = 10;
 
 const authTest = (req, res, next) => {
@@ -102,7 +102,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/register-page", (req, res) => {
+app.get("/register-page", (_, res) => {
   res.sendFile(path.join(__dirname + "/index-reg.html"));
 });
 
@@ -126,7 +126,7 @@ app.post("/register", async (req, res) => {
   res.redirect("/");
 });
 
-app.get("/chat", authTest, async (req, res) => {
+app.get("/chat", authTest, async (_, res) => {
   const result = await db.getChatHistory();
 
   if (!result) {
@@ -141,7 +141,7 @@ app.get("/chat", authTest, async (req, res) => {
   });
 });
 
-app.get("/logout", (req, res) => {
+app.get("/logout", (_, res) => {
   res.clearCookie("token");
   res.redirect("/");
 });

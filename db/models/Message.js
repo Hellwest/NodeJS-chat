@@ -15,7 +15,7 @@ const MessageSchema = Mongoose.Schema({
       const hours = ('0' + date.getHours()).slice(-2);
       const minutes = ('0' + date.getMinutes()).slice(-2);
       const seconds = ('0' + date.getSeconds()).slice(-2);
-    
+
       return day + '/' + month + '/' + year + ' ' + hours + ':' + minutes + ':' + seconds;
     }
 	},
@@ -29,6 +29,7 @@ const MessageSchema = Mongoose.Schema({
 	}
 }, {
   timestamps: true,
+  toObject: { getters: true },
 });
 
 const Message = Mongoose.model("Message", MessageSchema)
