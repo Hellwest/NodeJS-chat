@@ -1,16 +1,15 @@
-FROM node:latest
+FROM node:14.11-alpine
 
 # install dependencies
-WORKDIR /opt/app
+WORKDIR /opt
 COPY package.json yarn.lock ./
+RUN yarn --production
 
 # copy app source to image _after_ npm install so that
 # application code changes don't bust the docker cache of npm install step
+WORKDIR /opt/app
 COPY . /opt/app
-RUN yarn
 
 EXPOSE 5000
 
-CMD yarn && yarn start
-
-# CMD [ "npm", "run", "start" ]
+CMD yarn start
