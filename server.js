@@ -90,12 +90,12 @@ app.post("/login", async (req, res) => {
   const result = await db.testLogin(login);
 
   if (!result) {
-    res.send("User not found");
+    res.send("Invalid credentials");
   } else {
     const isPassCorrect = await bcrypt.compare(password, result.password);
 
     if (!isPassCorrect) {
-      res.send("Incorrect password");
+      res.send("Invalid credentials");
     } else {
       checkTokenAndRedirect(req, res, login, password);
     }
