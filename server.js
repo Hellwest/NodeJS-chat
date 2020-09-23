@@ -6,10 +6,12 @@ const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const path = require("path");
-const db = require("./db");
 const app = express();
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
+
+const db = require("./db");
+const { secret } = require("./jwtsecret");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -24,13 +26,13 @@ app.use(
 );
 app.engine("handlebars", exphbs());
 app.set("view engine", "handlebars");
+app.use(express.static(path.join(__dirname + "/css/")))
 
-const secret = require("./jwtsecret").secret;
 let currentUser;
-let currentOnline = [];
+const currentOnline = [];
 const saltRounds = 10;
 
-function authTest(req, res, next) {
+const authTest = (req, res, next) => {
   if (!req.cookies.token) {
     console.log("No token supplied. Redirecting");
     res.redirect("/");
@@ -51,7 +53,7 @@ function authTest(req, res, next) {
   next();
 }
 
-function checkTokenAndRedirect(req, res, login, password) {
+const checkTokenAndRedirect = (req, res, login, password) => {
   if (!req.cookies.token) {
     const token = jwt.sign({ login, password }, secret, { expiresIn: "6h" });
 
@@ -82,32 +84,38 @@ function checkTokenAndRedirect(req, res, login, password) {
   }
 }
 
-app.use("/", express.static(__dirname + "/"));
+app.get("/", (_, res) => {
+  res.render("index", {
+    layout: false,
+  })
+});
 
 app.post("/login", async (req, res) => {
   const { login, password } = req.body;
 
-  const result = await db.testLogin(login);
+  const user = await db.getUser(login);
 
-  if (!result) {
-    res.send("User not found");
+  if (!user) {
+    res.send("Invalid credentials");
   } else {
-    const isPassCorrect = await bcrypt.compare(password, result.password);
+    const isPassCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPassCorrect) {
-      res.send("Incorrect password");
+      res.send("Invalid credentials");
     } else {
       checkTokenAndRedirect(req, res, login, password);
     }
   }
 });
 
-app.get("/register-page", (req, res) => {
-  res.sendFile(path.join(__dirname + "/index-reg.html"));
+app.get("/register-page", (_, res) => {
+  res.render("registration", {
+    layout: false,
+  });
 });
 
 app.post("/register", async (req, res) => {
-  const login = req.body.login;
+  const { login } = req.body;
 
   const password = await bcrypt.hash(req.body.password, saltRounds);
 
@@ -126,27 +134,27 @@ app.post("/register", async (req, res) => {
   res.redirect("/");
 });
 
-app.get("/chat", authTest, async (req, res) => {
-  const result = await db.getChatHistory();
+app.get("/chat", authTest, async (_, res) => {
+  const chatHistory = await db.getChatHistory();
 
-  if (!result) {
+  if (!chatHistory) {
     console.log("Error retreiving chat history");
   }
 
   res.render("chat", {
     layout: false,
     currentUsername: currentUser,
-    chatHistory: result,
+    chatHistory,
     PORT
   });
 });
 
-app.get("/logout", (req, res) => {
+app.get("/logout", (_, res) => {
   res.clearCookie("token");
   res.redirect("/");
 });
 
-const PORT = process.env.PORT || 80;
+const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running at port ${PORT}`);
 });
@@ -164,20 +172,20 @@ io.on("connection", socket => {
   io.emit("onlineListUpdate", currentOnline);
 
   socket.on("message", msg => {
-    console.log("Message sent:", msg.sender + ":", msg.message);
-    db.storeMessage(socketUser, msg.message);
+    console.log("Message sent:", msg.sender + ":", msg.text);
+    db.storeMessage(socketUser, msg.text, msg.time);
 
     socket.broadcast.emit("message", {
       sender: msg.sender,
       time: msg.time,
-      message: msg.message
+      text: msg.text
     });
   });
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socketUser);
 
-    for (var i = 0; i < currentOnline.length; i++) {
+    for (let i = 0; i < currentOnline.length; i++) {
       if (currentOnline[i] === socketUser) {
         currentOnline.splice(i, 1);
         break;

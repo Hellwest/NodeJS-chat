@@ -1,19 +1,15 @@
-const Sequelize = require('sequelize');
+const Mongoose = require('mongoose');
 
-const sequelize = new Sequelize('postgres://postgres:admin@postgres:5432/chat', {
-    logging: false,
-    pool: {
-        max: 5,
-        min: 0,
-        acquire: 30000,
-        idle: 10000
-    }
-});
+const connectionString = 
+  `mongodb://${process.env.DB_HOST || `localhost`}/${process.env.DB_NAME || `chat`}`
 
 try {
-    sequelize.authenticate();
+  Mongoose.connect(connectionString, {
+    useNewUrlParser: true, 
+    useUnifiedTopology: true
+  });
 } catch (error) {
-    console.log(error)
-};
+  console.log("Database connection error:", error)
+}
 
-module.exports = sequelize;
+module.exports = { Mongoose };

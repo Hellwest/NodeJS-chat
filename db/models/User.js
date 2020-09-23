@@ -1,22 +1,18 @@
-const Sequelize = require('sequelize');
-const sequelize = require('../DBConnect');
+const { Mongoose } = require('../DBConnect');
 
-const User = sequelize.define('user', {
-	userid: {
-		type: Sequelize.INTEGER,
-		autoIncrement: true,
-		primaryKey: true
-	},
+const UserSchema = Mongoose.Schema({
 	username: {
-		type: Sequelize.STRING,
-		allowNull: false
+		type: String,
+		required: true
 	},
 	password: {
-		type: Sequelize.STRING(60),
-		allowNull: false
-	}
+		type: String,
+		required: true
+	},
+}, {
+  timestamps: true,
 });
 
-User.sync();
+const User = Mongoose.model("User", UserSchema)
 
 module.exports = User;
