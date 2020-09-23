@@ -1,4 +1,4 @@
-const { Mongoose } = require('../DBConnect');
+const { Mongoose } = require('../db-config');
 
 const MessageSchema = Mongoose.Schema({
   time: {

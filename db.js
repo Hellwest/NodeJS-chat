@@ -1,5 +1,5 @@
-const User = require('./db/models/User');
-const Message = require('./db/models/Message');
+const User = require('./db/models/user');
+const Message = require('./db/models/message');
 
 const getUser = async (login) => {
 	try {
