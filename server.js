@@ -11,7 +11,7 @@ const server = require("http").createServer(app);
 const io = require("socket.io")(server);
 
 const db = require("./db");
-const { secret } = require("./jwtsecret");
+const { secret } = require("./jwt-secret");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -58,7 +58,7 @@ const checkTokenAndRedirect = (req, res, login, password) => {
     const token = jwt.sign({ login, password }, secret, { expiresIn: "6h" });
 
     if (!token) {
-      console.log("JWT signing error occured");
+      console.log("JWT signing error ocurred");
     }
 
     res.cookie("token", token, { httpOnly: true });
@@ -127,7 +127,7 @@ app.post("/register", async (req, res) => {
   const token = jwt.sign({ login, password }, secret, { expiresIn: "6h" });
 
   if (!token) {
-    console.log("JWT signing error occured");
+    console.log("JWT signing error ocurred");
   }
 
   res.cookie("token", token, { httpOnly: true });
@@ -138,14 +138,15 @@ app.get("/chat", authTest, async (_, res) => {
   const chatHistory = await db.getChatHistory();
 
   if (!chatHistory) {
-    console.log("Error retreiving chat history");
+    console.log("Error retrieving chat history");
   }
 
   res.render("chat", {
     layout: false,
     currentUsername: currentUser,
     chatHistory,
-    PORT
+    host,
+    port,
   });
 });
 
@@ -154,9 +155,11 @@ app.get("/logout", (_, res) => {
   res.redirect("/");
 });
 
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`Server running at port ${PORT}`);
+const host = process.env.SERVER_HOST || `http://localhost`
+const port = process.env.PORT || 5000;
+
+server.listen(port, () => {
+  console.log(`Server running at port ${port}`);
 });
 
 // Socket.io

@@ -27,7 +27,8 @@
 	</form>
 	<script>
 		const name = '{{ currentUsername }}';
-		const PORT = '{{ PORT }}';
+    const host = '{{ host }}';
+		const port = '{{ port }}';
 
 		// Функция для обновления онлайн-листа
 		const renderOnlineList = currentOnline => {
@@ -79,7 +80,7 @@
 			window.location.replace('/logout');
 		});
 
-		const socket = io.connect(`http://localhost:${PORT}`);
+		const socket = io.connect(`${host}:${port}`);
 
 		// При коннекте текущего пользователя
 		socket.on('connect', () => {
