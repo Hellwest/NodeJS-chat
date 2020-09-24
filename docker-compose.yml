@@ -1,30 +1,53 @@
-version: "3"
+version: "3.7"
 
 services:
-  postgres:
-    image: postgres
-    container_name: chat_db
+  mongo:
+    image: mongo:4.4
+    container_name: mongo
     restart: on-failure
     volumes:
-      - db:/var/lib/postgresql/data
+      - db:/data/db
+    ports:
+      - "27017:27017"
+    # environment:
+    #   - MONGO_INITDB_ROOT_USERNAME=hellwest
+    #   - MONGO_INITDB_ROOT_PASSWORD=hellwest
+    #   - MONGO_INITDB_DATABASE=chat
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mgweb
+    restart: on-failure
+    ports:
+      - "5433:8081"
     environment:
-      - POSTGRES_PASSWORD=admin
-      - POSTGRES_USER=postgres
-      - POSTGRES_DB=chat
+      - ME_CONFIG_BASICAUTH_USERNAME=chat
+      - ME_CONFIG_BASICAUTH_PASSWORD=chat
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+      #- ME_CONFIG_MONGODB_ADMINUSERNAME=hellwest
+      #- ME_CONFIG_MONGODB_ADMINPASSWORD=hellwest
+      - ME_CONFIG_MONGODB_SERVER=mongo
+      - ME_CONFIG_MONGODB_AUTH_DATABASE=chat
+      - ME_CONFIG_MONGODB_AUTH_USERNAME=hellwest
+      - ME_CONFIG_MONGODB_AUTH_PASSWORD=hellwest
+    depends_on:
+      - mongo
 
   app:
     build: .
     container_name: chat
     ports:
-      - "80:80"
-      - "5432:5432"
+      - "5000:5000"
     volumes:
       - .:/opt/app
     entrypoint:
       - yarn
       - start
+    environment:
+      - DB_HOST=mongo
+      - DB_NAME=chat
     depends_on:
-      - postgres
+      - mongo
 
 volumes:
   db:
